@@ -23,7 +23,7 @@ def test_wrong_login_url():
     
 def test_wrong_update_stocks_list_url():
     bs = BastterWeb()
-    bs.URL_STOCKS_LIST += "a"
+    bs.URL_STOCKS_SEARCH += "a"
     resp = bs.update_stocks_list()
     
     assert resp == False

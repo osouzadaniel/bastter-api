@@ -28,8 +28,36 @@ else:
     print("Error while obtaining stocks data :(")
     
 stock_data = bs.get_stock_data("MSFT")
-print(stock_data['Symbol'] + " is the ticker of " + stock_data['Company'])
+print(stock_data['Symbol'] + " is the ticker of " + stock_data['Name'])
 
 stock_data = bs.get_stock_data("DIS")
-print(stock_data['Symbol'] + " is the ticker of " + stock_data['Company'])
-print(stock_data['Description'])
+print(stock_data['Symbol'] + " is the ticker of " + stock_data['Name'])
+
+
+print("------------")
+search_string = 'HG'
+search_result = bs.search_fiis(search_string)
+print("Search FIIs with '" + search_string +"' returned {} itens: ".format(len(search_result)))
+for item in search_result:
+    print(item['Codigo'] + " -> " + item["Nome"])
+    
+print("------------")
+search_string = 'PET'
+search_result = bs.search_acoes(search_string)
+print("Search Ações with '" + search_string +"' returned {} itens: ".format(len(search_result)))
+for item in search_result:
+    print(item['CodBolsa'] + " -> " + item["Nome"])
+    
+print("------------")
+search_string = 'Alp'
+search_result = bs.search_stocks(search_string)
+print("Search Stocks with '" + search_string +"' returned {} itens: ".format(len(search_result)))
+for item in search_result:
+    print(item['Symbol'] + " -> " + item["Name"])
+    
+print("------------")
+search_string = 'FR'
+search_result = bs.search_reits(search_string)
+print("Search REITs with '" + search_string +"' returned {} itens: ".format(len(search_result)))
+for item in search_result:
+    print(item['Symbol'] + " -> " + item["Name"])

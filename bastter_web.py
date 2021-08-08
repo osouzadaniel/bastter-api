@@ -41,7 +41,11 @@ class BastterWeb():
     __PASSWORD = keyring.get_password("bastter", "password") # Your password here
     URL_LOGIN = 'https://bastter.com/Mercado/WebServices/WsUsuario.asmx/Login'
     URL_VERIFY_AUTH = 'https://bastter.com/mercado/webservices/WsUsuario.asmx/IsAuthenticated'
-    URL_STOCKS_LIST = 'https://bastter.com/mercado/webservices/WS_Company.asmx/ListRating'
+    URL_STOCKS_SEARCH = 'https://bastter.com/mercado/webservices/WS_Company.asmx/Search'
+    URL_REITS_SEARCH = 'https://bastter.com/mercado/webservices/WS_Company.asmx/SearchREIT'
+    URL_ACOES_SEARCH = 'https://bastter.com/mercado/webservices/WS_Empresa.asmx/Pesquisar'
+    URL_FIIS_SEARCH = 'https://bastter.com/mercado/webservices/WS_FII.asmx/Pesquisar'
+    URL_STATUS_OK = 200
     
     STOCKS_INDEX = 0
     REITS_INDEX = 1
@@ -91,7 +95,7 @@ class BastterWeb():
         data = '{}'
         self.__response = self.__session.post(self.URL_VERIFY_AUTH, headers=self.__headers, data=data)
         
-        if self.__response.status_code == 200:
+        if self.__response.status_code == self.URL_STATUS_OK:
             status = json.loads(self.__response.json()['d'])["IsAuthenticated"]
             
             return status
@@ -100,15 +104,11 @@ class BastterWeb():
     
     
     def update_stocks_list(self):
-        # Data to post request
-        data = '{"tamanho":10000,"data":null}'
 
         # Send post request
-        self.__response = self.__session.post(self.URL_STOCKS_LIST, headers=self.__headers, data=data)
+        stocks_list = self.search_stocks()
         
-        if self.__response.status_code == 200:
-            # Read response JSON
-            stocks_list = json.loads(self.__response.json()['d'])["Items"]
+        if self.__response.status_code == self.URL_STATUS_OK:
             # Create stocks index dictionary
             company_indexes = {}
         
@@ -128,7 +128,6 @@ class BastterWeb():
         return False
             
     
-    
     def get_stock_data(self, stock):
         try:
             stock_index = self.__company_indexes[self.STOCKS_INDEX][stock]
@@ -137,10 +136,39 @@ class BastterWeb():
             raise KeyError("Unknown Company: '" + stock + "'")
             
         return stock_data
+    
+    def search_stocks(self, search = '[ALL]'):
+        return self.__search_us(self.URL_STOCKS_SEARCH, search)
+    
+    def search_reits(self, search = '[ALL]'):
+        return self.__search_us(self.URL_REITS_SEARCH, search)
+    
+    def __search_us(self, url, search):
+        data = '{"text":"' + search + '","page":1,"pageSize":30000,"countryID":0}'
+
+
+        self.__response = self.__session.post(url, headers=self.__headers, data=data)
+        if self.__response.status_code == self.URL_STATUS_OK:
+            return json.loads(self.__response.json()['d'])
+        else:
+            return []
         
-
-
-
+    # TODO: Standardize return dict keys
+    
+    def search_acoes(self, search = ''):
+        return self.__search_br(self.URL_ACOES_SEARCH, search)
+    
+    def search_fiis(self, search = ''):
+        return self.__search_br(self.URL_FIIS_SEARCH, search, locator="Fundos")
+    
+    def __search_br(self, url, search, locator = "Items"):
+        data = '{"ativo":"' + search + '","pagina":0}'
+        
+        self.__response = self.__session.post(url, headers=self.__headers, data=data)
+        if self.__response.status_code == self.URL_STATUS_OK:
+            return json.loads(self.__response.json()['d'])[locator]
+        else:
+            return []
 '''
 TODO:
 ###################################################################################
